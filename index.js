@@ -1,11 +1,22 @@
-const { v4: uuidv4, validate } = require('uuid');
+require('dotenv').config()
 
-function getNewToken() {
-  return uuidv4();
-}
+const express = require('express')
+const cors = require('cors')
 
-function validateToken(token) {
-  return validate(token);
-}
+const bodyParser = require('body-parser')
+const port = process.env.PORT
+const app = express()
 
-// console.log("Hello World");
+const router = express.Router()
+const routes = require('./routes/router')
+
+app.use(cors({ origin: '*' }));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: '10mb', type: 'application/json' }));
+
+app.use('/api', router);
+routes(router);
+
+app.listen(port, function () {
+    console.log(process.env.ENV, ': Listening on port', port, '- start:', Date(Date.now()).toString());
+}); 
