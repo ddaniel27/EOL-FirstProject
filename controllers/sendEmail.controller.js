@@ -1,12 +1,13 @@
 const { transporter } = require("../email/email");
 
-const sendEmail = async (req, res) => {
+const sendEmail = async ({email,token}, res) => {
 
-  const {to, subject, text} = req.body
+  const subject = "Authentication email"
+  const text = "This is an authentication email. Your token is: " + token
 
   const mailData = {
     from: '"EOL Development" <EOL@example.com>',
-    to: to,
+    to: email,
     subject: subject,
     text: text,
     html: "<b>Hello world?</b>",

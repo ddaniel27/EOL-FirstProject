@@ -1,4 +1,4 @@
-const { check } = require("express-validator");
+const {body, validationResult } = require("express-validator");
 
 // Controladores
 const { sendEmail } = require("../controllers/sendEmail.controller");
@@ -10,20 +10,45 @@ module.exports = (router) => {
   router.post(
     "/sendinfo",
     [
-      check("email").normalizeEmail().isEmail(),
-      check("country").isAlpha(),
-      check("name").isAlpha(),
-      check("lastname").isAlpha(),
-      check("address").isAlphanumeric(),
-      check("wallet").isAlphanumeric(),
-      check("city").isAlpha(),
-      check("province").isAlpha(),
-      check("zipcode").isInt(),
-      check("phone").isInt(),
+      body("email").isEmail(),
+      body("country").isAlpha('en-US', {ignore: /[\xE0-\xFF' ']/g}),
+      body("name").isAlpha('en-US', {ignore: /[\xE0-\xFF' ']/g}),
+      body("lastname").isAlpha('en-US', {ignore: /[\xE0-\xFF' ']/g}),
+      body("address").isAlphanumeric('en-US', {ignore: ' -'}),
+      body("wallet").isAlphanumeric(),
+      body("city").isAlpha('en-US', {ignore: /[\xE0-\xFF' ']/g}),
+      body("province").isAlpha('en-US', {ignore: /[\xE0-\xFF' ']/g}),
+      body("zipcode").isInt(),
+      body("phone").isInt(),
     ],
-    async function toDB (req,res) {
-      await addNewContactInfo(req,myConnection,getNewToken())
-      sendEmail(req,res)
+    async (req,res) => {
+        const errors = validationResult(req).errors
+        if(errors.length){
+          res.status(400).json({errors:errors})
+          return
+        }
+        const newObj = {
+            email: req.body.email.toLowerCase(),
+            country: req.body.country.toLowerCase(),
+            name: req.body.name.toLowerCase(),
+            lastname: req.body.lastname.toLowerCase(),
+            address: req.body.address.toLowerCase(),
+            wallet: req.body.wallet.toLowerCase(),
+            city: req.body.city.toLowerCase(),
+            province: req.body.province.toLowerCase(),
+            zipcode: req.body.zipcode,
+            phone: req.body.phone
+        }
+        const sendEmailObj ={
+          token: getNewToken(),
+          email: newObj.email
+        }
+        try{
+          await addNewContactInfo(newObj,myConnection,sendEmailObj.token)
+          await sendEmail(sendEmailObj,res)
+        }catch(err){
+          console.log(err)
+        }
     }
   );
 };
