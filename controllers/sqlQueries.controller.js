@@ -5,7 +5,8 @@ const configConnection = {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE
+    database: process.env.DB_DATABASE,
+    multipleStatements: true
 }
 
 function createConnection() {
@@ -14,10 +15,11 @@ function createConnection() {
 
 async function addNewContactInfo({email, country, name, lastname, address, wallet, city, province, zipcode, phone}, connection, token){
     try{
-        const countriesQuery = `(SELECT code FROM countries WHERE name='${country})'`
-        const provinceQuery = `(SELECT id FROM provinces WHERE name='${province})'`
+        const countriesQuery = `(SELECT code FROM countries WHERE name='${country}')`
+        const provinceQuery = `(SELECT code FROM provinces WHERE name='${province}')`
+        const tokenSelectQuery = `(SELECT id FROM transactions WHERE token='${token}')`
         const tokenQuery = `INSERT INTO transactions (token) VALUES ('${token}');`
-        const contactQuery = `INSERT INTO contact_information (email, country, name, lastname, address, wallet, city, province, zipcode, phone, transactionID) VALUES ('${email}', '${countriesQuery}', '${name}', '${lastname}', '${address}', '${wallet}', '${city}', '${provinceQuery}', '${zipcode}', '${phone}', (SELECT id FROM transactions WHERE token='${token}'));`
+        const contactQuery = `INSERT INTO contact_information (email, country, name, lastname, address, wallet, city, province, zipcode, phone, transactionID) VALUES ('${email}', ${countriesQuery}, '${name}', '${lastname}', '${address}', '${wallet}', '${city}', ${provinceQuery}, '${zipcode}', '${phone}', ${tokenSelectQuery});`
         
         await connection.query(tokenQuery, (err, result) => {
             if(err) throw err
@@ -33,11 +35,10 @@ async function addNewContactInfo({email, country, name, lastname, address, walle
     }
 }
 
-function addOrderID(connection, orderID, token){
+async function addOrderID(connection, orderID, token){
     const query = `UPDATE transactions SET orderID='${orderID}' WHERE token='${token}';`
     try{
-
-        connection.query(query, (err, result) => {
+        await connection.query(query, (err, result) => {
             if(err) throw err
             console.log(result)
         })
@@ -47,18 +48,17 @@ function addOrderID(connection, orderID, token){
 }
 
 async function getEmailByToken(connection, token){
-    const query = `SELECT email FROM contact_information WHERE transactionID=(SELECT id FROM transactions WHERE token='${token}');`
-    let email = ''
-    try{
-
-        await connection.query(query, (err, result) => {
-            if(err) throw err
-            email = result[0].email
-        })
-    }catch(err){
-        return err
-    }
-    return email
+    return new Promise((resolve, reject) => {
+        const query = `SELECT email FROM contact_information WHERE transactionID=(SELECT id FROM transactions WHERE token='${token}');`
+        try{
+            connection.query(query, (err, result) => {
+                if(err) throw err
+                resolve(result[0].email)
+            })
+        }catch(err){
+            reject(err)
+        }
+    })
 }
 
 
