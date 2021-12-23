@@ -2,7 +2,7 @@ const {body, validationResult } = require("express-validator");
 
 // Controladores
 const { sendEmail } = require("../controllers/sendEmail.controller");
-const {addNewContactInfo, createConnection} = require("../controllers/sqlQueries.controller")
+const {addNewContactInfo, createConnection, addOrderID} = require("../controllers/sqlQueries.controller")
 const {getNewToken, validateToken} = require("../controllers/uuid.controller")
 const myConnection = createConnection()
 module.exports = (router) => {
@@ -41,7 +41,8 @@ module.exports = (router) => {
         }
         const sendEmailObj ={
           token: getNewToken(),
-          email: newObj.email
+          email: newObj.email,
+          isAuth: true
         }
         try{
           await addNewContactInfo(newObj,myConnection,sendEmailObj.token)
@@ -51,4 +52,33 @@ module.exports = (router) => {
         }
     }
   );
-};
+  router.post(
+    "/paypaltransaction",
+    [
+      body("token").isAlphanumeric('en-US', {ignore: ' -'}),
+      body("orderID").isAlphanumeric('en-US', {ignore: ' -'})
+    ],
+    async (req,res) => {
+        const errors = validationResult(req).errors
+        if(errors.length){
+          res.status(400).json({errors:errors})
+          return
+        }
+        const token = req.body.token
+        const orderID = req.body.orderID
+        try{
+          const isValid = validateToken(token)
+          if(!isValid){
+            res.status(400).json({errors:["Invalid token"]})
+            return
+          }
+          await addOrderID(myConnection, orderID, token)
+          const email = await getEmailByToken(myConnection, token)
+          await sendEmail({email: email, token: orderID, isAuth:false},res)
+        }catch(err){
+          console.log(err)
+        }
+    }
+    )
+
+}

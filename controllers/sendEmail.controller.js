@@ -1,6 +1,6 @@
 const { transporter } = require("../email/email");
 
-const sendEmail = async ({email,token}, res) => {
+const sendEmail = async ({email, token, isAuth}, res) => {
 
   const subject = "Authentication email"
   const text = "This is an authentication email. Your token is: " + token
