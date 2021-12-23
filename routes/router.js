@@ -22,6 +22,7 @@ module.exports = (router) => {
       body("phone").isInt(),
     ],
     async (req,res) => {
+        let uploadPath;
         const errors = validationResult(req).errors
         if(errors.length){
           res.status(400).json({errors:errors})
@@ -37,8 +38,15 @@ module.exports = (router) => {
             city: req.body.city.toLowerCase(),
             province: req.body.province.toLowerCase(),
             zipcode: req.body.zipcode,
-            phone: req.body.phone
-        }
+            phone: req.body.phone,
+            kycDocument: req.files.kycDocument
+          }
+        uploadPath='./imageFolder/' + newObj.email + newObj.kycDocument.name
+        newObj.kycDocument.mv(uploadPath,function (err){
+          if(err) return res.status(500).send(err)
+        })
+        res.send('File upload')
+        
         const sendEmailObj ={
           token: getNewToken(),
           email: newObj.email,
