@@ -7,7 +7,7 @@ const sendEmail = async ({email, token, isAuth}, res) => {
   const title = isAuth?`Authentication email`:`Verification Transaction`
   const body = isAuth?`Lorem Ipsum`:`Lorem Ipsum`
   const linkText = isAuth?`Process payment`:``
-  const link = isAuth?`http://www.google.com/?token=${token}`:``
+  const link = isAuth?`http://www.google.com/?token=${token}`:`` //Add verification link
 
   const mailData = {
     from: '"EOL Development" <EOL@example.com>',

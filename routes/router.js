@@ -2,7 +2,7 @@ const {body, validationResult } = require("express-validator");
 
 // Controladores
 const { sendEmail } = require("../controllers/sendEmail.controller");
-const {addNewContactInfo, createConnection, addOrderID} = require("../controllers/sqlQueries.controller")
+const {addNewContactInfo, createConnection, addOrderID, getEmailByToken} = require("../controllers/sqlQueries.controller")
 const {getNewToken, validateToken} = require("../controllers/uuid.controller")
 const myConnection = createConnection()
 
@@ -46,7 +46,7 @@ module.exports = (router) => {
           isAuth: true
         }
         try{
-          //await addNewContactInfo(newObj,myConnection,sendEmailObj.token)
+          await addNewContactInfo(newObj,myConnection,sendEmailObj.token)
           await sendEmail(sendEmailObj,res)
         }catch(err){
           console.log(err)
