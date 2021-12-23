@@ -3,6 +3,7 @@ require('dotenv').config()
 const nodemailer = require("nodemailer");
 
 exports.transporter = nodemailer.createTransport({
+
   host: "smtp.gmail.com",
   port: 465,
   secure: true,
@@ -13,10 +14,11 @@ exports.transporter = nodemailer.createTransport({
   tls: {
     rejectUnauthorized: false
   }
+  
 });
 
 this.transporter.verify().then(() => {
   console.log("Ready for send emails");
 }).catch(err => {
-    // console.log('Error de correo', err);
+  console.log('Error emails', err);
 });

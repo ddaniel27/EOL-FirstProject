@@ -5,6 +5,7 @@ const { sendEmail } = require("../controllers/sendEmail.controller");
 const {addNewContactInfo, createConnection, addOrderID, getEmailByToken} = require("../controllers/sqlQueries.controller")
 const {getNewToken, validateToken} = require("../controllers/uuid.controller")
 const myConnection = createConnection()
+
 module.exports = (router) => {
   //Mailing
   router.post(
@@ -67,6 +68,8 @@ module.exports = (router) => {
         }
     }
   );
+  
+
   router.post(
     "/paypaltransaction",
     [
