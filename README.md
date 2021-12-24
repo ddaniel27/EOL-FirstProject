@@ -9,7 +9,7 @@ _En el directorio del proyecto, puede ejecutar:_
 npm i
 ```
 ```
-npm start
+npm run start
 ```
 
 ## 🛠️ Construcción
